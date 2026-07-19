@@ -5,16 +5,17 @@ import Footer from "@/components/Shared/Footer/Footer";
 import { getUserSession } from "@/lib/core/session";
 import { Toaster } from "sonner";
 
+// 1. Load the fonts
 const fraunces = Fraunces({
   subsets: ["latin"],
-  variable: "--font-fraunces",
+  variable: "--font-fraunces", // This maps to your CSS variable
   weight: ["500", "600", "700"],
   display: "swap",
 });
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-jakarta",
+  variable: "--font-jakarta", // This maps to your CSS variable
   weight: ["400", "500", "600", "700"],
   display: "swap",
 });
@@ -26,18 +27,18 @@ export const metadata = {
 };
 
 export default async function RootLayout({ children }) {
-  // Fetch session on the server completely securely
   const user = await getUserSession();
 
   return (
     <html data-theme="light" lang="en" className="h-full antialiased">
+      {/* 2. Apply the variables to the body tag */}
       <body
-        className={`${fraunces.variable} ${jakarta.variable} min-h-full flex flex-col`}
+        className={`${fraunces.variable} ${jakarta.variable} min-h-full flex flex-col bg-[var(--background)] text-[var(--text-primary)]`}
       >
         <Navbar user={user} />
-
-        <main>{children}</main>
+        <main className="flex-grow">{children}</main>
         <Footer />
+
         <Toaster
           position="bottom-right"
           richColors

@@ -50,7 +50,7 @@ html {
 body {
   background-color: var(--background);
   color: var(--text-primary);
-  font-family: var(--font-jakarta), sans-serif;
+  /* font-family: var(--font-jakarta), sans-serif; */
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -117,3 +117,40 @@ textarea,
 select {
   font: inherit;
 }
+/* Marquee Animation Styles */
+/* @keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+}
+.animate-marquee2 {
+  animation: marquee 20s linear infinite;
+  animation-delay: 10s;
+} */
+
+/* =========================================
+   INFINITE CAROUSEL ANIMATION
+   ========================================= */
+
+/* @keyframes scroll-slow {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll-slow {
+  animation: scroll-slow 45s linear infinite;
+}
+
+.hover\:animation-pause:hover {
+  animation-play-state: paused;
+} */
