@@ -1,7 +1,7 @@
 import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Shared/Navbar/Navbar";
-//TODO:import Footer from "@/components/Shared/Footer/Footer";
+import Footer from "@/components/Shared/Footer/Footer";
 import { getUserSession } from "@/lib/core/session";
 import { Toaster } from "sonner";
 
@@ -37,7 +37,7 @@ export default async function RootLayout({ children }) {
         <Navbar user={user} />
 
         <main>{children}</main>
-        {/* <Footer /> */}
+        <Footer />
         <Toaster
           position="bottom-right"
           richColors
