@@ -26,7 +26,7 @@ const ImageUpload = ({
     const localPreview = URL.createObjectURL(file);
     setPreview(localPreview);
 
-    // Upload to ImgBB
+    // Upload to ImgBB using your hook
     const result = await uploadImage(file);
 
     if (result) {
@@ -57,7 +57,7 @@ const ImageUpload = ({
   return (
     <div className={`space-y-2 ${className}`}>
       {label && (
-        <label className="text-sm font-medium text-(--dark)">
+        <label className="text-sm font-medium text-[var(--dark)]">
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
@@ -66,31 +66,33 @@ const ImageUpload = ({
       {!preview ? (
         <div
           onClick={handleClick}
-          className="relative flex min-h-45 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50/50 transition-all hover:border-(--primary) hover:bg-gray-50 group"
+          className="relative flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50/50 transition-all hover:border-[var(--primary)] hover:bg-gray-50 group"
         >
           <div className="flex flex-col items-center gap-3 p-6 text-center">
             {isUploading ? (
               <>
-                <div className="rounded-full bg-(--primary)/10 p-4">
-                  <Loader2 className="h-8 w-8 animate-spin text-(--primary)" />
+                <div className="rounded-full bg-[var(--primary)]/10 p-4">
+                  <Loader2 className="h-8 w-8 animate-spin text-[var(--primary)]" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-(--dark)">
+                  <p className="text-sm font-medium text-[var(--dark)]">
                     Uploading...
                   </p>
-                  <p className="text-xs text-(--text-secondary)">Please wait</p>
+                  <p className="text-xs text-[var(--text-secondary)]">
+                    Please wait
+                  </p>
                 </div>
               </>
             ) : (
               <>
-                <div className="rounded-full bg-(--primary)/10 p-4 group-hover:bg-(--primary)/20 transition-colors">
-                  <Camera className="h-8 w-8 text-(--primary)" />
+                <div className="rounded-full bg-[var(--primary)]/10 p-4 group-hover:bg-[var(--primary)]/20 transition-colors">
+                  <Camera className="h-8 w-8 text-[var(--primary)]" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-(--dark)">
+                  <p className="text-sm font-medium text-[var(--dark)]">
                     Click to upload photo
                   </p>
-                  <p className="text-xs text-(--text-secondary) mt-1">
+                  <p className="text-xs text-[var(--text-secondary)] mt-1">
                     PNG, JPG, GIF up to 5MB
                   </p>
                 </div>
@@ -108,8 +110,8 @@ const ImageUpload = ({
         </div>
       ) : (
         /* Preview Card */
-        <div className="relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div className="relative aspect-4/3 w-full bg-gray-100">
+        <div className="relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm group">
+          <div className="relative aspect-[4/3] w-full bg-gray-100">
             <Image
               src={preview}
               alt="Uploaded image"
@@ -129,12 +131,12 @@ const ImageUpload = ({
           </div>
 
           {/* Overlay Actions */}
-          <div className="absolute inset-0 bg-black/40 opacity-0 transition-opacity hover:opacity-100 flex items-center justify-center gap-3">
+          <div className="absolute inset-0 bg-black/40 opacity-0 transition-opacity group-hover:opacity-100 flex items-center justify-center gap-3">
             <button
               type="button"
               onClick={handleClick}
               disabled={isUploading}
-              className="rounded-full bg-white/90 p-2.5 text-(--dark) transition hover:bg-white hover:scale-105 disabled:opacity-50"
+              className="rounded-full bg-white/90 p-2.5 text-[var(--dark)] transition hover:bg-white hover:scale-105 disabled:opacity-50"
               title="Change image"
             >
               <ImageIcon className="h-5 w-5" />
@@ -151,10 +153,10 @@ const ImageUpload = ({
           </div>
 
           {/* Bottom Info Bar */}
-          <div className="flex items-center justify-between bg-gray-50 px-4 py-2">
+          <div className="flex items-center justify-between bg-gray-50 px-4 py-2 border-t border-gray-100">
             <div className="flex items-center gap-2">
-              <ImageIcon className="h-4 w-4 text-(--text-secondary)" />
-              <span className="text-xs text-(--text-secondary)">
+              <ImageIcon className="h-4 w-4 text-[var(--text-secondary)]" />
+              <span className="text-xs text-[var(--text-secondary)]">
                 {uploadedImage
                   ? "Image uploaded successfully"
                   : "Image uploaded"}
@@ -164,7 +166,7 @@ const ImageUpload = ({
               type="button"
               onClick={handleClick}
               disabled={isUploading}
-              className="text-xs font-medium text-(--primary) hover:underline disabled:opacity-50"
+              className="text-xs font-medium text-[var(--primary)] hover:underline disabled:opacity-50"
             >
               Change
             </button>

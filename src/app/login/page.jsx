@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, AlertCircle, ChefHat } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, ChefHat, Sparkles } from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -11,66 +11,33 @@ import { motion } from "framer-motion";
 import Container from "@/components/UI/Container";
 import Button from "@/components/UI/Button";
 import Input from "@/components/UI/Input";
-import ImageUpload from "@/components/UI/ImageUpload";
 // Adjust this import to your actual BetterAuth client setup
-import { signUp } from "@/lib/auth-client";
+import { signIn } from "@/lib/auth-client";
 
-const RegisterPage = () => {
+const LoginPage = () => {
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: "",
     email: "",
-    image: "",
     password: "",
-    confirmPassword: "",
   });
 
   const [errors, setErrors] = useState({
-    name: "",
     email: "",
-    image: "",
     password: "",
-    confirmPassword: "",
     general: "",
   });
 
-  const [success, setSuccess] = useState("");
-
-  const validatePassword = (password) => {
-    const errors = [];
-
-    if (password.length < 6) errors.push("at least 6 characters");
-    if (!/[A-Z]/.test(password)) errors.push("one uppercase letter");
-    if (!/[a-z]/.test(password)) errors.push("one lowercase letter");
-
-    return errors;
-  };
-
   const validateForm = () => {
     const newErrors = {
-      name: "",
       email: "",
-      image: "",
       password: "",
-      confirmPassword: "",
       general: "",
     };
     let isValid = true;
-
-    if (!formData.name) {
-      newErrors.name = "Name is required";
-      isValid = false;
-    } else if (formData.name.length < 2) {
-      newErrors.name = "Name must be at least 2 characters";
-      isValid = false;
-    } else if (formData.name.length > 50) {
-      newErrors.name = "Name must be less than 50 characters";
-      isValid = false;
-    }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email) {
@@ -81,30 +48,8 @@ const RegisterPage = () => {
       isValid = false;
     }
 
-    if (!formData.image) {
-      newErrors.image = "Photo is required";
-      isValid = false;
-    }
-
     if (!formData.password) {
       newErrors.password = "Password is required";
-      isValid = false;
-    } else {
-      const passwordErrors = validatePassword(formData.password);
-      if (passwordErrors.length > 0) {
-        newErrors.password = `Password must contain ${passwordErrors.join(", ")}`;
-        isValid = false;
-      }
-    }
-
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
-      isValid = false;
-    } else if (
-      formData.password &&
-      formData.password !== formData.confirmPassword
-    ) {
-      newErrors.confirmPassword = "Passwords do not match";
       isValid = false;
     }
 
@@ -125,18 +70,6 @@ const RegisterPage = () => {
     if (errors.general) {
       setErrors((prev) => ({ ...prev, general: "" }));
     }
-    if (success) setSuccess("");
-  };
-
-  const handleImageUpload = (url) => {
-    setFormData((prev) => ({ ...prev, image: url }));
-    if (errors.image) {
-      setErrors((prev) => ({ ...prev, image: "" }));
-    }
-  };
-
-  const handleImageRemove = () => {
-    setFormData((prev) => ({ ...prev, image: "" }));
   };
 
   const handleSubmit = async (e) => {
@@ -148,53 +81,47 @@ const RegisterPage = () => {
     }
 
     setIsLoading(true);
-    setErrors({
-      name: "",
-      email: "",
-      image: "",
-      password: "",
-      confirmPassword: "",
-      general: "",
-    });
-    setSuccess("");
+    setErrors({ email: "", password: "", general: "" });
 
     try {
-      const result = await signUp.email({
-        name: formData.name,
+      const result = await signIn.email({
         email: formData.email,
         password: formData.password,
-        image: formData.image,
       });
 
       if (result.error) {
         setErrors((prev) => ({
           ...prev,
-          general: result.error.message || "Registration failed",
+          general:
+            result.error.message || "Login failed. Please check credentials.",
         }));
-        toast.error("Registration failed", {
-          description: result.error.message || "Please try again",
+        toast.error("Login failed", {
+          description: result.error.message || "Invalid email or password",
         });
         return;
       }
 
-      setSuccess("Registration successful! Redirecting to login...");
-      toast.success("🎉 Registration successful!", {
-        description: "Please check your email to verify your account.",
-        duration: 5000,
+      toast.success("🎉 Welcome back to PlateShare!", {
+        description: "Redirecting you to your dashboard...",
+        duration: 3000,
       });
 
+      // Use the callbackUrl if present, otherwise go home
+      const params = new URLSearchParams(window.location.search);
+      const callbackUrl = params.get("callbackUrl") || "/";
+
       setTimeout(() => {
-        router.push("/login");
+        router.push(callbackUrl);
         router.refresh();
-      }, 2000);
+      }, 1000);
     } catch (err) {
       console.error(err);
       setErrors((prev) => ({
         ...prev,
-        general: "Registration failed. Please try again.",
+        general: "An unexpected error occurred. Please try again.",
       }));
-      toast.error("Registration failed", {
-        description: "An unexpected error occurred. Please try again.",
+      toast.error("Login failed", {
+        description: "An unexpected error occurred.",
       });
     } finally {
       setIsLoading(false);
@@ -202,7 +129,7 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-[var(--background)] via-white to-[var(--secondary)]/10 py-12 flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-[var(--background)] via-white to-[var(--primary)]/10 py-12 flex items-center justify-center relative overflow-hidden">
       {/* Creative Decorative Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none select-none z-0">
         <motion.div
@@ -233,33 +160,30 @@ const RegisterPage = () => {
           className="mx-auto max-w-md"
         >
           {/* Unique Floating Chef Icon */}
-          {/* <motion.div
+          <motion.div
             initial={{ scale: 0.8 }}
             animate={{ scale: 1, y: [0, -5, 0] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="mx-auto -mt-16 mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-xl border-4 border-[var(--background)]"
+            className="mx-auto -mt-7 mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-xl border-4 border-[var(--background)]"
           >
             <ChefHat className="h-10 w-10 text-[var(--primary)]" />
-          </motion.div> */}
+          </motion.div>
 
           <div className="rounded-3xl bg-white/80 backdrop-blur-xl border border-white/50 p-8 shadow-2xl">
             <div className="mb-8 text-center">
-              <h1 className="text-3xl font-bold text-[var(--dark)]">
-                Join PlateShare
-              </h1>
-              <p className="mt-2 text-sm text-[var(--text-secondary)]">
-                Start cooking smarter and planning better today.
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Sparkles className="h-5 w-5 text-[var(--primary)]" />
+                <h1 className="text-3xl font-bold text-[var(--dark)]">
+                  Welcome Back
+                </h1>
+                <Sparkles className="h-5 w-5 text-[var(--secondary)]" />
+              </div>
+              <p className="text-sm text-[var(--text-secondary)]">
+                Sign in to continue cooking and planning your weekly meals.
               </p>
             </div>
 
-            {/* Success & Error Inline Messages */}
-            {success && (
-              <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700 flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 shrink-0" />
-                <span>{success}</span>
-              </div>
-            )}
-
+            {/* General Error - Inline */}
             {errors.general && (
               <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600 flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 shrink-0" />
@@ -268,48 +192,6 @@ const RegisterPage = () => {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Profile Photo - Your Reusable Component */}
-              <div>
-                <ImageUpload
-                  label="Profile Photo"
-                  onImageUpload={handleImageUpload}
-                  onImageRemove={handleImageRemove}
-                  required={true}
-                />
-                {errors.image && (
-                  <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
-                    {errors.image}
-                  </p>
-                )}
-              </div>
-
-              {/* Name Field */}
-              <div>
-                <label className="mb-1 block text-sm font-medium text-[var(--dark)]">
-                  Full Name <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  name="name"
-                  type="text"
-                  placeholder="John Doe"
-                  value={formData.name}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  className={
-                    errors.name
-                      ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
-                      : ""
-                  }
-                />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
-                    {errors.name}
-                  </p>
-                )}
-              </div>
-
               {/* Email Field */}
               <div>
                 <label className="mb-1 block text-sm font-medium text-[var(--dark)]">
@@ -345,7 +227,7 @@ const RegisterPage = () => {
                   <Input
                     name="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Create password"
+                    placeholder="Enter your password"
                     value={formData.password}
                     onChange={handleChange}
                     disabled={isLoading}
@@ -364,42 +246,22 @@ const RegisterPage = () => {
                     )}
                   </button>
                 </div>
-                {errors.password ? (
+                {errors.password && (
                   <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
                     <AlertCircle className="h-3 w-3" />
                     {errors.password}
                   </p>
-                ) : (
-                  <p className="mt-2 text-xs text-[var(--text-secondary)]">
-                    Minimum 6 characters with uppercase & lowercase letters.
-                  </p>
                 )}
               </div>
 
-              {/* Confirm Password Field */}
-              <div>
-                <label className="mb-1 block text-sm font-medium text-[var(--dark)]">
-                  Confirm Password <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  name="confirmPassword"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Confirm password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  disabled={isLoading}
-                  className={
-                    errors.confirmPassword
-                      ? "border-red-500 focus:border-red-500 focus:ring-red-500/20"
-                      : ""
-                  }
-                />
-                {errors.confirmPassword && (
-                  <p className="mt-1 text-sm text-red-500 flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
-                    {errors.confirmPassword}
-                  </p>
-                )}
+              {/* Forgot Password Link */}
+              <div className="flex justify-end">
+                <Link
+                  href="/forgot-password"
+                  className="text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--primary)] transition"
+                >
+                  Forgot password?
+                </Link>
               </div>
 
               <Button
@@ -426,10 +288,10 @@ const RegisterPage = () => {
                         d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                       />
                     </svg>
-                    Creating Account...
+                    Signing In...
                   </span>
                 ) : (
-                  "Register"
+                  "Sign In"
                 )}
               </Button>
             </form>
@@ -446,7 +308,7 @@ const RegisterPage = () => {
               </div>
             </div>
 
-            {/* Google Button */}
+            {/* Google Button - (Disabled for now as per your register logic) */}
             <button
               disabled
               className="flex w-full cursor-not-allowed items-center justify-center gap-3 rounded-xl border border-gray-300 py-3 text-sm font-medium text-[var(--dark)] opacity-60"
@@ -456,12 +318,12 @@ const RegisterPage = () => {
             </button>
 
             <p className="mt-6 text-center text-sm text-[var(--text-secondary)]">
-              Already have an account?{" "}
+              Don&apos;t have an account yet?{" "}
               <Link
-                href="/login"
+                href="/register"
                 className="font-semibold text-[var(--primary)] hover:underline transition"
               >
-                Login
+                Create Account
               </Link>
             </p>
           </div>
@@ -471,4 +333,4 @@ const RegisterPage = () => {
   );
 };
 
-export default RegisterPage;
+export default LoginPage;
