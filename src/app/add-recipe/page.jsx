@@ -35,6 +35,15 @@ const CUISINE_TAGS = [
   "Bengali",
   "Mediterranean",
   "Dessert",
+  "French",
+  "Indian",
+  "Vegan",
+  "Fast Food",
+  "Bakery",
+  "BBQ",
+  "Beverages",
+  "Healthy",
+  "Seafood",
 ];
 
 // Framer Motion Variants

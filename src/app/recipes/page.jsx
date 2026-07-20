@@ -245,7 +245,7 @@ const RecipesPage = () => {
 
   // --- Main Render ---
   return (
-    <div className="min-h-screen bg-[var(--background)] py-12">
+    <div className="min-h-screen bg-[var(--background)] py-12 mt-4">
       <Container>
         <SectionTitle
           title="Browse Recipes"
@@ -309,6 +309,16 @@ const RecipesPage = () => {
                     <option value="Bengali">🍛 Bengali</option>
                     <option value="Mediterranean">🥗 Mediterranean</option>
                     <option value="Dessert">🧁 Dessert</option>
+                    <option value="Vegan">🌱 Vegan</option>
+                    <option value="Indian">🍛 Indian</option>
+                    <option value="French">🥐 French</option>
+                    <option value="BBQ">🍖 BBQ</option>
+                    <option value="Fast Food">🍔 Fast Food</option>
+
+                    <option value="Bakery">🥐 Bakery</option>
+                    <option value="Beverages">🥤 Beverages</option>
+                    <option value="Healthy">🥗 Healthy</option>
+                    <option value="Seafood">🐟 Seafood</option>
                   </select>
                 </div>
 
