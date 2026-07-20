@@ -61,7 +61,7 @@ const Hero = () => {
   ];
 
   return (
-    <section className="relative bg-gradient-to-br from-orange-50/70 via-white to-amber-50/60 overflow-hidden min-h-[80vh] flex items-center py-12 lg:py-20">
+    <section className="relative bg-gradient-to-br from-orange-50/70 via-white to-amber-50/60 overflow-hidden min-h-[80vh] flex items-center py-1 ">
       {/* 1. ANIMATED AMBIENT BACKGROUND BLOBS (Spice/Food Colors) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none select-none z-0">
         <motion.div
