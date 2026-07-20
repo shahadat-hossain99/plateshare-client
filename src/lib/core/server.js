@@ -5,33 +5,46 @@ import { getUserToken } from "./session";
 
 const baseURL = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:5000";
 
+// Helper to determine if an error is an internal Next.js redirect token
+const isNextRedirect = (error) => {
+  return (
+    error &&
+    (error.digest?.includes("NEXT_REDIRECT") ||
+      error.message?.includes("NEXT_REDIRECT"))
+  );
+};
+
 export const authHeader = async () => {
   const token = await getUserToken();
-  const header = token
-    ? {
-        authorization: `Bearer ${token}`,
-      }
-    : {};
-
-  return header;
+  return token ? { authorization: `Bearer ${token}` } : {};
 };
 
 const handleStatusCode = (res, errorData = {}) => {
+  // Prints the true backend error data directly to your terminal window running Next.js
+  console.error("❌ BACKEND ERROR DETAILS:", {
+    status: res.status,
+    statusText: res.statusText,
+    errorData: errorData,
+  });
+
   const errorMessage =
-    errorData.message || `Request failed with status ${res.status}`;
+    errorData.message ||
+    errorData.error ||
+    (typeof errorData === "string" ? errorData : null) ||
+    `Request failed with status ${res.status}`;
 
   switch (res.status) {
     case 401:
       console.warn("Unauthorized request. Access tokens may be expired.");
-      redirect("/unauthorized"); // ✅ Fixed: NOT inside try/catch
+      redirect("/unauthorized");
       break;
     case 403:
       console.warn("Forbidden. You do not have permission.");
-      redirect("/forbidden"); // ✅ Fixed: NOT inside try/catch
+      redirect("/forbidden");
       break;
     case 404:
       console.warn("Resource not found.");
-      redirect("/not-found"); // ✅ Fixed: NOT inside try/catch
+      redirect("/not-found");
       break;
     case 500:
       console.error("Internal Server Error.");
@@ -43,17 +56,36 @@ const handleStatusCode = (res, errorData = {}) => {
   throw new Error(errorMessage);
 };
 
+// Internal utility to securely pull error bodies regardless of format (JSON vs HTML/Text)
+const parseErrorResponse = async (res) => {
+  const contentType = res.headers.get("content-type");
+
+  if (contentType && contentType.includes("application/json")) {
+    try {
+      return await res.json();
+    } catch {
+      return { message: "Failed to parse JSON error response from server." };
+    }
+  } else {
+    try {
+      const textError = await res.text();
+      return {
+        message: textError || `Request failed with status ${res.status}`,
+      };
+    } catch {
+      return {
+        message: `Server returned status ${res.status} with an unreadable body.`,
+      };
+    }
+  }
+};
+
 export const serverFetch = async (path) => {
   try {
     const res = await fetch(`${baseURL}${path}`);
 
     if (!res.ok) {
-      let errorData;
-      try {
-        errorData = await res.json();
-      } catch {
-        errorData = {};
-      }
+      const errorData = await parseErrorResponse(res);
       throw new Error(
         errorData.message || `Fetch failed with status ${res.status}`,
       );
@@ -61,6 +93,7 @@ export const serverFetch = async (path) => {
 
     return await res.json();
   } catch (error) {
+    if (isNextRedirect(error)) throw error;
     console.error(`Server Fetch error at ${path}:`, error);
     throw error;
   }
@@ -73,25 +106,13 @@ export const protectedFetch = async (path) => {
     });
 
     if (!res.ok) {
-      let errorData;
-      try {
-        errorData = await res.json();
-      } catch {
-        errorData = {};
-      }
-
-      // ✅ Fix: Call handleStatusCode, but DO NOT wrap it in try/catch where it is called!
-      // It contains redirect(), which Next.js needs to throw natively.
+      const errorData = await parseErrorResponse(res);
       handleStatusCode(res, errorData);
     }
 
     return res.json();
   } catch (error) {
-    // 🛑 CRITICAL FIX: If Next.js throws a redirect, we must re-throw it so the redirect works!
-    if (error.message?.includes("NEXT_REDIRECT")) {
-      throw error;
-    }
-
+    if (isNextRedirect(error)) throw error;
     console.error(`Protected Fetch error at ${path}:`, error);
     throw error;
   }
@@ -114,14 +135,7 @@ export const serverMutation = async (path, data, method = "POST") => {
     });
 
     if (!res.ok) {
-      let errorData;
-      try {
-        errorData = await res.json();
-      } catch {
-        errorData = { message: "An unknown error occurred" };
-      }
-
-      // ✅ Fix: Call handleStatusCode, but do not catch the redirect here
+      const errorData = await parseErrorResponse(res);
       handleStatusCode(res, errorData);
     }
 
@@ -131,11 +145,7 @@ export const serverMutation = async (path, data, method = "POST") => {
 
     return await res.json();
   } catch (error) {
-    // 🛑 CRITICAL FIX: If Next.js throws a redirect, we must re-throw it!
-    if (error.message?.includes("NEXT_REDIRECT")) {
-      throw error;
-    }
-
+    if (isNextRedirect(error)) throw error;
     console.error(`Mutation failed at [${method}] ${path}:`, error);
     throw error;
   }
