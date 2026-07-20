@@ -48,7 +48,6 @@ html {
 }
 
 body {
-  background-color: var(--background);
   color: var(--text-primary);
   /* font-family: var(--font-jakarta), sans-serif; */
   min-height: 100vh;

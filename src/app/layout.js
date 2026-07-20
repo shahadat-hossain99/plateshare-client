@@ -33,7 +33,7 @@ export default async function RootLayout({ children }) {
     <html data-theme="light" lang="en" className="h-full antialiased">
       {/* 2. Apply the variables to the body tag */}
       <body
-        className={`${fraunces.variable} ${jakarta.variable} min-h-full flex flex-col bg-[var(--background)] text-[var(--text-primary)]`}
+        className={`${fraunces.variable} ${jakarta.variable} min-h-full flex flex-col text-[var(--text-primary)]`}
       >
         <Navbar user={user} />
         <main className="flex-grow">{children}</main>
