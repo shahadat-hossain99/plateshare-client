@@ -196,7 +196,7 @@ export default function MealPlannerPage() {
             <Link href="/my-cookbook">
               <Button
                 variant="outline"
-                className="gap-2 border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white"
+                className="gap-2 border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] "
               >
                 <Plus className="h-4 w-4" /> Add Recipe
               </Button>

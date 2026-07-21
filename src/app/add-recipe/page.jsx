@@ -288,7 +288,7 @@ export default function AddRecipePage() {
               <Button
                 variant="outline"
                 onClick={() => setIsAIModalOpen(true)}
-                className="border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white transition-all"
+                className="border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)]  transition-all"
               >
                 <Sparkles className="mr-2 h-4 w-4" /> Polish with AI
               </Button>
