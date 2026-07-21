@@ -7,20 +7,19 @@ import {
   Search,
   SlidersHorizontal,
   X,
-  Grid3x3,
   ChevronLeft,
   ChevronRight,
   Utensils,
   Clock,
 } from "lucide-react";
-import { useDebounce } from "@/hooks/useDebounce"; // Ensure you have this hook
+import { useDebounce } from "@/hooks/useDebounce";
 import Container from "@/components/UI/Container";
 import Button from "@/components/UI/Button";
 import Input from "@/components/UI/Input";
 import SectionTitle from "@/components/UI/SectionTitle";
 import RecipeCard from "@/components/Recipe/RecipeCard";
 import RecipeCardSkeleton from "@/components/Recipe/RecipeCardSkeleton";
-import { serverFetch } from "@/lib/core/server"; // Your custom fetch utility
+import { serverFetch } from "@/lib/core/server";
 
 const RecipesPage = () => {
   const router = useRouter();
@@ -30,9 +29,11 @@ const RecipesPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Pagination State
+  // 1. INITIALIZE PAGINATION FROM URL
+  const initialPage = parseInt(searchParams.get("page") || "1");
+
   const [pagination, setPagination] = useState({
-    currentPage: parseInt(searchParams.get("page") || "1"),
+    currentPage: initialPage,
     totalPages: 1,
     totalItems: 0,
     itemsPerPage: 12,
@@ -40,7 +41,6 @@ const RecipesPage = () => {
     hasPrevPage: false,
   });
 
-  // Filters State (Synced with URL)
   const [filters, setFilters] = useState({
     search: searchParams.get("search") || "",
     cuisine: searchParams.get("cuisine") || "",
@@ -52,55 +52,56 @@ const RecipesPage = () => {
   const debouncedSearch = useDebounce(filters.search, 500);
 
   // --- Data Fetching ---
-  const fetchRecipes = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      // 1. Build URL Search Params
-      const params = new URLSearchParams({
-        page: pagination.currentPage,
-        limit: pagination.itemsPerPage,
-      });
+  // ✅ FIXED: Added `pageOverride = null` to prevent ReferenceError
+  const fetchRecipes = useCallback(
+    async (pageOverride = null) => {
+      setIsLoading(true);
+      try {
+        const targetPage = pageOverride || pagination.currentPage;
 
-      if (debouncedSearch) params.set("search", debouncedSearch);
+        const params = new URLSearchParams({
+          page: targetPage,
+          limit: pagination.itemsPerPage,
+        });
 
-      // ONLY append cuisine/difficulty if they are NOT "all"
-      if (filters.cuisine && filters.cuisine !== "all")
-        params.set("cuisine", filters.cuisine);
-      if (filters.difficulty && filters.difficulty !== "all")
-        params.set("difficulty", filters.difficulty);
+        if (debouncedSearch) params.set("search", debouncedSearch);
+        if (filters.cuisine && filters.cuisine !== "all")
+          params.set("cuisine", filters.cuisine);
+        if (filters.difficulty && filters.difficulty !== "all")
+          params.set("difficulty", filters.difficulty);
+        if (filters.sortBy) params.set("sortBy", filters.sortBy);
+        if (filters.sortOrder) params.set("sortOrder", filters.sortOrder);
 
-      if (filters.sortBy) params.set("sortBy", filters.sortBy);
-      if (filters.sortOrder) params.set("sortOrder", filters.sortOrder);
+        const response = await serverFetch(`/api/recipes?${params.toString()}`);
 
-      // 2. Pass the full URL string to your serverFetch
-      const response = await serverFetch(`/api/recipes?${params.toString()}`);
+        setRecipes(response.data);
+        setPagination({
+          currentPage: response.pagination.currentPage,
+          totalPages: response.pagination.totalPages,
+          totalItems: response.pagination.totalItems,
+          itemsPerPage: response.pagination.itemsPerPage,
+          hasNextPage: response.pagination.hasNextPage,
+          hasPrevPage: response.pagination.hasPrevPage,
+        });
+      } catch (error) {
+        console.error("Error fetching recipes:", error);
+        toast.error("Failed to load recipes");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [
+      pagination.currentPage,
+      pagination.itemsPerPage,
+      debouncedSearch,
+      filters.cuisine,
+      filters.difficulty,
+      filters.sortBy,
+      filters.sortOrder,
+    ],
+  );
 
-      // 3. Update State
-      setRecipes(response.data);
-      setPagination({
-        currentPage: response.pagination.currentPage,
-        totalPages: response.pagination.totalPages,
-        totalItems: response.pagination.totalItems,
-        itemsPerPage: response.pagination.itemsPerPage,
-        hasNextPage: response.pagination.hasNextPage,
-        hasPrevPage: response.pagination.hasPrevPage,
-      });
-    } catch (error) {
-      console.error("Error fetching recipes:", error);
-      toast.error("Failed to load recipes");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [
-    pagination.currentPage,
-    pagination.itemsPerPage,
-    debouncedSearch,
-    filters.cuisine,
-    filters.difficulty,
-    filters.sortBy,
-    filters.sortOrder,
-  ]);
-
+  // ✅ FIXED: Restored useEffect to trigger fetch on load
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchRecipes();
@@ -119,14 +120,14 @@ const RecipesPage = () => {
         }
       });
 
-      const currentPage = page || pagination.currentPage;
-      if (currentPage > 1) {
-        params.set("page", currentPage.toString());
+      const targetPage = page || 1;
+      if (targetPage > 1) {
+        params.set("page", targetPage.toString());
       }
 
       router.push(`/recipes?${params.toString()}`);
     },
-    [filters, pagination.currentPage, router],
+    [filters, router],
   );
 
   const clearFilters = () => {
@@ -141,9 +142,15 @@ const RecipesPage = () => {
     router.push("/recipes");
   };
 
+  // ✅ CRITICAL FIX: Optimized Page Change
   const handlePageChange = (page) => {
+    if (page === pagination.currentPage) return;
+
     setPagination((prev) => ({ ...prev, currentPage: page }));
+    setIsLoading(true);
     updateFilters({}, page);
+    fetchRecipes(page); // Pass page explicitly
+
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -308,10 +315,10 @@ const RecipesPage = () => {
                     <option value="Mexican">🌮 Mexican</option>
                     <option value="Bengali">🍛 Bengali</option>
                     <option value="Mediterranean">🥗 Mediterranean</option>
-                    <option value="Dessert">🧁 Dessert</option>
                     <option value="Vegan">🌱 Vegan</option>
                     <option value="Indian">🍛 Indian</option>
                     <option value="French">🥐 French</option>
+                    <option value="Dessert">🧁 Dessert</option>
                     <option value="BBQ">🍖 BBQ</option>
                     <option value="Fast Food">🍔 Fast Food</option>
 
