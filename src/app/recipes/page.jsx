@@ -312,6 +312,9 @@ const RecipesPage = () => {
                     <option value="all">All Cuisines</option>
                     <option value="Italian">🇮🇹 Italian</option>
                     <option value="Asian">🥢 Asian</option>
+                    <option value="Sichuan">🌶️ Sichuan</option>
+                    <option value="Chinese">🥡 Chinese</option>
+
                     <option value="Mexican">🌮 Mexican</option>
                     <option value="Bengali">🍛 Bengali</option>
                     <option value="Mediterranean">🥗 Mediterranean</option>
