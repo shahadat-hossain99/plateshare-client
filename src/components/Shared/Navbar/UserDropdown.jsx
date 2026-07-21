@@ -4,14 +4,15 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronDown,
   User,
   LogOut,
-  Home,
   PlusCircle,
   CalendarDays,
   BookOpen,
+  Sparkles,
 } from "lucide-react";
 
 import { signOut } from "@/lib/auth-client";
@@ -19,10 +20,12 @@ import { toast } from "sonner";
 
 const UserDropdown = ({ user }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const dropdownRef = useRef(null);
   const router = useRouter();
   const pathname = usePathname();
 
+  // Close on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -33,6 +36,7 @@ const UserDropdown = ({ user }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Close on Escape key
   useEffect(() => {
     const handleEscape = (event) => {
       if (event.key === "Escape") setIsOpen(false);
@@ -53,7 +57,7 @@ const UserDropdown = ({ user }) => {
       setTimeout(() => {
         router.push("/login");
         router.refresh();
-      }, 1000);
+      }, 800);
     } catch (error) {
       console.error("Sign-out failed:", error);
       toast.error("Logout failed");
@@ -61,119 +65,131 @@ const UserDropdown = ({ user }) => {
   };
 
   const menuItems = [
-    { name: "Profile", href: "/profile", icon: User },
+    { name: "My Profile", href: "/profile", icon: User },
     { name: "My Cookbook", href: "/my-cookbook", icon: BookOpen },
     { name: "Add Recipe", href: "/add-recipe", icon: PlusCircle },
     { name: "Meal Planner", href: "/meal-planner", icon: CalendarDays },
   ];
 
+  const userInitial = user.name?.charAt(0).toUpperCase() || "U";
+
   return (
-    <div className="relative z-50 flex items-center gap-2" ref={dropdownRef}>
-      {/* Dropdown Trigger */}
+    <div className="relative z-50 flex items-center" ref={dropdownRef}>
+      {/* Avatar Trigger Pill */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            setIsOpen(!isOpen);
-          }
-        }}
         aria-label="User menu"
         aria-expanded={isOpen}
-        className="flex items-center gap-2 rounded-full bg-[var(--secondary)]/10 px-3 py-2 transition hover:bg-[var(--secondary)]/20 hover:shadow-md hover:shadow-[var(--secondary)]/20"
+        className="group flex items-center gap-2 rounded-full border border-gray-100 bg-white/80 p-1.5 pr-3 shadow-sm backdrop-blur-md transition-all hover:border-[var(--primary)]/30 hover:bg-white hover:shadow-md"
       >
-        <div className="relative h-8 w-8 overflow-hidden rounded-full bg-gray-200">
-          {user.image ? (
+        <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[var(--primary)]/20 to-[var(--secondary)]/20 text-xs font-bold text-[var(--primary)] ring-2 ring-[var(--primary)]/20 transition-transform group-hover:scale-105">
+          {user.image && !imgError ? (
             <Image
               src={user.image}
               alt={user.name || "User avatar"}
               fill
               sizes="32px"
               className="object-cover"
-              onError={(e) => {
-                const target = e.target;
-                target.style.display = "none";
-                const parent = target.parentElement;
-                if (parent) {
-                  const fallback = document.createElement("span");
-                  fallback.className =
-                    "flex h-full w-full items-center justify-center text-sm font-medium text-gray-600 bg-gray-200";
-                  fallback.textContent =
-                    user.name?.charAt(0).toUpperCase() || "U";
-                  parent.appendChild(fallback);
-                }
-              }}
+              onError={() => setImgError(true)}
             />
           ) : (
-            <span className="flex h-full w-full items-center justify-center text-sm font-medium text-gray-600 bg-gray-200">
-              {user.name?.charAt(0).toUpperCase() || "U"}
-            </span>
+            <span>{userInitial}</span>
           )}
         </div>
+
+        <span className="hidden text-xs font-semibold text-[var(--dark)] md:inline-block max-w-[100px] truncate">
+          {user.name?.split(" ")[0]}
+        </span>
+
         <ChevronDown
-          className={`h-4 w-4 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
+          className={`h-3.5 w-3.5 text-gray-400 transition-transform duration-200 ${
+            isOpen
+              ? "rotate-180 text-[var(--primary)]"
+              : "group-hover:text-gray-600"
           }`}
         />
       </button>
 
-      {/* Logout Button - Outside Dropdown */}
-      <button
-        onClick={handleLogout}
-        className="flex items-center gap-1.5 rounded-full border border-red-200 px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 hover:border-red-300"
-      >
-        <LogOut className="h-4 w-4" />
-        <span className="hidden sm:inline">Logout</span>
-      </button>
-
-      {/* Dropdown Menu */}
-      <div
-        className={`absolute right-0 top-full mt-2 w-56 rounded-xl bg-white shadow-lg ring-1 ring-black/5 transition-all duration-200 ${
-          isOpen
-            ? "opacity-100 scale-100 visible"
-            : "opacity-0 scale-95 invisible"
-        }`}
-      >
-        <div className="border-b px-4 py-3">
-          <p className="font-semibold text-[var(--dark)] truncate">
-            {user.name}
-          </p>
-          <p className="text-sm text-gray-500 truncate">{user.email}</p>
-        </div>
-
-        <div className="p-2">
-          {menuItems.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
-                  isActive
-                    ? "bg-[var(--primary)]/10 text-[var(--primary)] font-semibold"
-                    : "text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                <item.icon
-                  className={`h-4 w-4 ${isActive ? "text-[var(--primary)]" : "text-gray-400"}`}
-                />
-                <span>{item.name}</span>
-              </Link>
-            );
-          })}
-        </div>
-
-        <div className="border-t p-2">
-          <button
-            onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50"
+      {/* Animated Dropdown Menu */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-gray-100 bg-white p-2 shadow-xl ring-1 ring-black/5"
           >
-            <LogOut className="h-4 w-4" />
-            <span>Logout</span>
-          </button>
-        </div>
-      </div>
+            {/* User Details Box */}
+            <div className="flex items-center gap-3 rounded-xl bg-orange-50/50 p-3 mb-1">
+              <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] text-sm font-bold text-white shadow-sm">
+                {user.image && !imgError ? (
+                  <Image
+                    src={user.image}
+                    alt={user.name || "User avatar"}
+                    fill
+                    sizes="40px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <span>{userInitial}</span>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-[var(--dark)] truncate">
+                  {user.name}
+                </p>
+                <p className="text-xs text-[var(--text-secondary)] truncate">
+                  {user.email}
+                </p>
+              </div>
+            </div>
+
+            {/* Menu Items */}
+            <div className="space-y-0.5 py-1">
+              {menuItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsOpen(false)}
+                    className={`group flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-semibold transition-all ${
+                      isActive
+                        ? "bg-[var(--primary)] text-white shadow-sm shadow-[var(--primary)]/30"
+                        : "text-gray-600 hover:bg-gray-100/80 hover:text-[var(--dark)]"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <item.icon
+                        className={`h-4 w-4 transition-colors ${
+                          isActive
+                            ? "text-white"
+                            : "text-gray-400 group-hover:text-[var(--primary)]"
+                        }`}
+                      />
+                      <span>{item.name}</span>
+                    </div>
+
+                    {isActive && <Sparkles className="h-3 w-3 text-white/80" />}
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Logout Action */}
+            <div className="mt-1 border-t border-gray-100 pt-1">
+              <button
+                onClick={handleLogout}
+                className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-semibold text-red-600 transition hover:bg-red-50 hover:text-red-700"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Logout</span>
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

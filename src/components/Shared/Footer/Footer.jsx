@@ -6,11 +6,11 @@ import {
   Heart,
   Mail,
   Phone,
-  MapPin,
   Utensils,
   Salad,
   ChefHat,
   Clock,
+  ArrowUp,
 } from "lucide-react";
 import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa6";
 import { BsTwitterX } from "react-icons/bs";
@@ -21,6 +21,14 @@ import Logo from "../Navbar/Logo";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+
+  // Smooth scroll handler to top of page
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
 
   const quickLinks = [
     { name: "About Us", href: "/about" },
@@ -223,6 +231,15 @@ const Footer = () => {
                 <Heart className="h-3 w-3 text-red-500 fill-red-500 animate-pulse" />{" "}
                 by PlateShare
               </span>
+
+              {/* Back to Top Button */}
+              <button
+                onClick={scrollToTop}
+                aria-label="Back to top"
+                className="flex items-center justify-center rounded-full bg-white/10 p-2.5 text-white/70 transition-all hover:bg-[var(--primary)] hover:text-white hover:scale-110 active:scale-95 ml-2"
+              >
+                <ArrowUp className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </Container>

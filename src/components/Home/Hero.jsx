@@ -11,6 +11,24 @@ import {
   Flame,
   ChefHat,
   ArrowRight,
+  Utensils,
+  Pizza,
+  Soup,
+  Carrot,
+  Apple,
+  Salad,
+  Coffee,
+  Cookie,
+  Beef,
+  Egg,
+  Fish,
+  Croissant,
+  IceCream,
+  Sandwich,
+  Milk,
+  Wine,
+  Cake,
+  Cherry,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import Container from "@/components/UI/Container";
@@ -36,8 +54,60 @@ const itemVariants = {
   },
 };
 
+// Expanded list of 18 floating food items
+const floatingFoodItems = [
+  // Top Area
+  { Icon: Pizza, top: "8%", left: "6%", size: 36, duration: 14, delay: 0 },
+  { Icon: Carrot, top: "18%", left: "38%", size: 28, duration: 18, delay: 1 },
+  { Icon: Apple, top: "12%", left: "65%", size: 32, duration: 15, delay: 1.5 },
+  {
+    Icon: Croissant,
+    top: "6%",
+    left: "88%",
+    size: 34,
+    duration: 17,
+    delay: 0.8,
+  },
+
+  // Mid-Upper Area
+  { Icon: Cookie, top: "32%", left: "14%", size: 28, duration: 21, delay: 1.2 },
+  { Icon: Egg, top: "28%", left: "52%", size: 26, duration: 16, delay: 2.2 },
+  {
+    Icon: Sandwich,
+    top: "35%",
+    left: "78%",
+    size: 32,
+    duration: 19,
+    delay: 0.3,
+  },
+
+  // Center Area
+  { Icon: Utensils, top: "52%", left: "4%", size: 34, duration: 16, delay: 2 },
+  { Icon: Fish, top: "48%", left: "32%", size: 30, duration: 22, delay: 1.7 },
+  { Icon: Salad, top: "50%", left: "92%", size: 38, duration: 17, delay: 2.5 },
+
+  // Mid-Lower Area
+  { Icon: Beef, top: "68%", left: "18%", size: 32, duration: 16, delay: 2.1 },
+  { Icon: Soup, top: "72%", left: "42%", size: 36, duration: 20, delay: 0.5 },
+  {
+    Icon: IceCream,
+    top: "65%",
+    left: "68%",
+    size: 30,
+    duration: 18,
+    delay: 3.1,
+  },
+  { Icon: Wine, top: "70%", left: "85%", size: 28, duration: 15, delay: 1.1 },
+
+  // Bottom Area
+  { Icon: Coffee, top: "88%", left: "10%", size: 30, duration: 19, delay: 3 },
+  { Icon: Milk, top: "85%", left: "30%", size: 26, duration: 17, delay: 0.9 },
+  { Icon: Cake, top: "90%", left: "58%", size: 32, duration: 21, delay: 2.7 },
+  { Icon: Cherry, top: "86%", left: "78%", size: 28, duration: 14, delay: 1.4 },
+];
+
 const Hero = () => {
-  // Your exact local images
+  // Local images
   const imagePool = [
     "/banner/hero-01.jpg",
     "/banner/hero-02.jpg",
@@ -62,7 +132,7 @@ const Hero = () => {
 
   return (
     <section className="relative bg-gradient-to-br from-orange-50/70 via-white to-amber-50/60 overflow-hidden min-h-[80vh] flex items-center py-1 mt-4">
-      {/* 1. ANIMATED AMBIENT BACKGROUND BLOBS (Spice/Food Colors) */}
+      {/* 1. ANIMATED AMBIENT BACKGROUND BLOBS */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none select-none z-0">
         <motion.div
           animate={{
@@ -92,22 +162,35 @@ const Hero = () => {
         />
       </div>
 
-      {/* 2. DRIFTING FOOD PATTERN BACKGROUND */}
-      <div className="absolute inset-0 opacity-[0.04] pointer-events-none select-none z-0">
-        <motion.div
-          className="w-full h-full"
-          animate={{
-            backgroundPosition: ["0px 0px", "160px 120px"],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='160' height='120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-40 40 Q 20 10, 80 40 T 200 40' stroke='%23c0522d' fill='none' stroke-width='1.5' stroke-linecap='round'/%3E%3Cpath d='M-40 80 Q 20 50, 80 80 T 200 80' stroke='%23c0522d' fill='none' stroke-width='1.5' stroke-linecap='round'/%3E%3Cpath d='M-40 0 Q 20 -30, 80 0 T 200 0' stroke='%23c0522d' fill='none' stroke-width='1.5' stroke-linecap='round'/%3E%3Cpath d='M-40 120 Q 20 90, 80 120 T 200 120' stroke='%23c0522d' fill='none' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E`,
-          }}
-        />
+      {/* 2. DENSE FLOATING FOOD ICONS BACKGROUND */}
+      <div className="absolute inset-0 pointer-events-none select-none z-0 overflow-hidden">
+        {floatingFoodItems.map((item, index) => {
+          const FoodIcon = item.Icon;
+          return (
+            <motion.div
+              key={index}
+              style={{
+                position: "absolute",
+                top: item.top,
+                left: item.left,
+              }}
+              animate={{
+                y: [0, -20, 15, 0],
+                x: [0, 12, -12, 0],
+                rotate: [0, 15, -15, 0],
+              }}
+              transition={{
+                duration: item.duration,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: item.delay,
+              }}
+              className="text-orange-950/[0.08] hover:text-orange-950/[0.15] transition-colors"
+            >
+              <FoodIcon size={item.size} strokeWidth={1.5} />
+            </motion.div>
+          );
+        })}
       </div>
 
       <Container className="relative z-10 w-full">
@@ -178,7 +261,7 @@ const Hero = () => {
               </Link>
             </motion.div>
 
-            {/* Trending Ingredients Marquee (Replaced "Partners") */}
+            {/* Trending Ingredients Marquee */}
             <motion.div
               variants={itemVariants}
               className="mt-12 border-t border-gray-100 pt-8 w-full max-w-xl overflow-hidden min-w-0"
@@ -218,7 +301,7 @@ const Hero = () => {
             </motion.div>
           </motion.div>
 
-          {/* RIGHT: Image Mosaic Section (Using your local images) */}
+          {/* RIGHT: Image Mosaic Section */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -227,7 +310,7 @@ const Hero = () => {
           >
             {/* Main Application Mock Container */}
             <div className="relative w-full h-full flex flex-col rounded-3xl border border-gray-100 bg-white/70 p-4 shadow-2xl backdrop-blur-md">
-              {/* UNIQUE: Nutritional Macros Header (Replaced Browser Dots) */}
+              {/* Nutritional Macros Header */}
               <div className="flex items-center justify-between pb-4 px-1 border-b border-gray-100/80 mb-4 flex-shrink-0">
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-[var(--primary)]"></div>
@@ -263,7 +346,7 @@ const Hero = () => {
                     className="object-cover transition-transform duration-700 hover:scale-105"
                   />
 
-                  {/* UNIQUE: Cooking Filters Widget inside Image Frame (Replaced Location/Date) */}
+                  {/* Cooking Filters Widget inside Image Frame */}
                   <div className="absolute top-3 inset-x-3 flex items-center justify-between rounded-xl border border-white/20 bg-white/95 p-2 shadow-lg backdrop-blur-md text-[11px] font-medium">
                     <div className="flex items-center gap-1 text-gray-500 border-r border-gray-100 pr-1.5 flex-1 justify-center">
                       <Clock className="w-3.5 h-3.5 text-[var(--primary)]" />
@@ -280,7 +363,7 @@ const Hero = () => {
                   </div>
                 </motion.div>
 
-                {/* Vertical Stack Right Column (Using your local images) */}
+                {/* Vertical Stack Right Column */}
                 <div className="grid grid-cols-2 sm:grid-cols-1 gap-4 h-full">
                   <motion.div
                     whileHover={{ y: -4 }}
@@ -312,7 +395,7 @@ const Hero = () => {
               </div>
             </div>
 
-            {/* Overlapping Absolute Rating Badge Component */}
+            {/* Overlapping Rating Badge */}
             <motion.div
               initial={{ opacity: 0, y: 10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
