@@ -15,6 +15,7 @@ import {
   Clock,
   Users,
   Flame,
+  Sparkles, // Added Sparkles for AI Button
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -23,7 +24,7 @@ import Container from "@/components/UI/Container";
 import Button from "@/components/UI/Button";
 import Input from "@/components/UI/Input";
 import ImageUpload from "@/components/UI/ImageUpload";
-// Assuming your fetch utility is here. Adjust path if different.
+import AIRecipePolisher from "@/components/Recipe/AIRecipePolisher"; // Import the AI Modal
 import { serverMutation } from "@/lib/core/server";
 
 // Constants
@@ -68,6 +69,7 @@ const itemVariants = {
 export default function AddRecipePage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false); // State for AI Modal
 
   // Form State
   const [formData, setFormData] = useState({
@@ -85,8 +87,19 @@ export default function AddRecipePage() {
   // Error State
   const [errors, setErrors] = useState({});
 
-  // --- Handlers ---
+  // --- AI Callback Handler ---
+  // This will receive the data from the AI Modal and auto-fill the form!
+  const handleApplyAI = (aiData) => {
+    setFormData((prev) => ({
+      ...prev,
+      title: aiData.title || prev.title,
+      description: aiData.description || prev.description,
+      steps: aiData.steps || prev.steps,
+    }));
+    toast.success("✨ AI content applied!");
+  };
 
+  // --- Standard Handlers ---
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -183,7 +196,6 @@ export default function AddRecipePage() {
       isValid = false;
     }
 
-    // Validate Ingredient fields
     const invalidIngredientIndex = formData.ingredients.findIndex(
       (ing) => !ing.name.trim() || !ing.quantity.trim(),
     );
@@ -192,7 +204,6 @@ export default function AddRecipePage() {
       isValid = false;
     }
 
-    // Validate Step fields
     const invalidStepIndex = formData.steps.findIndex((step) => !step.trim());
     if (invalidStepIndex !== -1) {
       newErrors.steps = "All steps must be filled out";
@@ -214,25 +225,15 @@ export default function AddRecipePage() {
     setIsSubmitting(true);
 
     try {
-      // Prepare payload
-
       const payload = {
         title: formData.title.trim(),
-
         description: formData.description.trim(),
-
         image: formData.image,
-
         cookTime: parseInt(formData.cookTime),
-
         servings: parseInt(formData.servings),
-
         difficulty: formData.difficulty,
-
         ingredients: formData.ingredients,
-
         steps: formData.steps.filter((s) => s.trim()),
-
         cuisineTags: formData.cuisineTags,
       };
 
@@ -240,7 +241,6 @@ export default function AddRecipePage() {
 
       toast.success("🎉 Recipe added successfully!", {
         description: "Your recipe is now visible to the community.",
-
         duration: 4000,
       });
 
@@ -271,7 +271,7 @@ export default function AddRecipePage() {
           >
             <ArrowLeft className="h-4 w-4" /> Back to Home
           </Link>
-          <div className="mt-4 flex items-center gap-3">
+          <div className="mt-4 flex items-center gap-4">
             <div className="rounded-xl bg-[var(--primary)]/10 p-3 text-[var(--primary)]">
               <ChefHat className="h-8 w-8" />
             </div>
@@ -283,6 +283,27 @@ export default function AddRecipePage() {
                 Share your culinary creation with the PlateShare community.
               </p>
             </div>
+            {/* AI Polisher Trigger Button Right in the Header */}
+            <div className="ml-auto hidden sm:block">
+              <Button
+                variant="outline"
+                onClick={() => setIsAIModalOpen(true)}
+                className="border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white transition-all"
+              >
+                <Sparkles className="mr-2 h-4 w-4" /> Polish with AI
+              </Button>
+            </div>
+          </div>
+
+          {/* AI Button on Mobile */}
+          <div className="mt-3 sm:hidden">
+            <Button
+              variant="outline"
+              onClick={() => setIsAIModalOpen(true)}
+              className="w-full border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white"
+            >
+              <Sparkles className="mr-2 h-4 w-4" /> Polish with AI
+            </Button>
           </div>
         </motion.div>
 
@@ -294,18 +315,16 @@ export default function AddRecipePage() {
           onSubmit={handleSubmit}
           className="space-y-8"
         >
-          {/* =========================================
-              1. Basic Information
-              ========================================= */}
+          {/* ... Basic Information ... */}
           <motion.div
             variants={itemVariants}
             className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 sm:p-8"
           >
+            {/* (Your existing Basic Information block remains exactly the same) */}
             <h2 className="text-lg font-bold text-[var(--dark)] mb-4 flex items-center gap-2">
               <Box className="h-5 w-5 text-[var(--primary)]" /> Basic
               Information
             </h2>
-
             <div className="space-y-4">
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-[var(--dark)]">
@@ -330,7 +349,6 @@ export default function AddRecipePage() {
                   </p>
                 )}
               </div>
-
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-[var(--dark)]">
                   Description <span className="text-red-500">*</span>
@@ -338,7 +356,7 @@ export default function AddRecipePage() {
                 <textarea
                   name="description"
                   rows={4}
-                  placeholder="Write a brief description of your recipe. What makes it special?"
+                  placeholder="Write a brief description..."
                   value={formData.description}
                   onChange={handleChange}
                   disabled={isSubmitting}
@@ -350,7 +368,6 @@ export default function AddRecipePage() {
                   </p>
                 )}
               </div>
-
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-[var(--dark)]">
@@ -374,7 +391,6 @@ export default function AddRecipePage() {
                     </p>
                   )}
                 </div>
-
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-[var(--dark)]">
                     Servings <span className="text-red-500">*</span>
@@ -397,7 +413,6 @@ export default function AddRecipePage() {
                     </p>
                   )}
                 </div>
-
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-[var(--dark)]">
                     Difficulty <span className="text-red-500">*</span>
@@ -419,9 +434,7 @@ export default function AddRecipePage() {
             </div>
           </motion.div>
 
-          {/* =========================================
-              2. Recipe Image
-              ========================================= */}
+          {/* ... Recipe Image ... */}
           <motion.div
             variants={itemVariants}
             className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 sm:p-8"
@@ -443,9 +456,7 @@ export default function AddRecipePage() {
             )}
           </motion.div>
 
-          {/* =========================================
-              3. Cuisine Tags
-              ========================================= */}
+          {/* ... Cuisine Tags ... */}
           <motion.div
             variants={itemVariants}
             className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 sm:p-8"
@@ -457,7 +468,6 @@ export default function AddRecipePage() {
             <p className="text-sm text-[var(--text-secondary)] mb-3">
               Select all that apply to your recipe.
             </p>
-
             <div className="flex flex-wrap gap-2.5">
               {CUISINE_TAGS.map((tag) => {
                 const isSelected = formData.cuisineTags.includes(tag);
@@ -466,11 +476,7 @@ export default function AddRecipePage() {
                     key={tag}
                     type="button"
                     onClick={() => toggleCuisineTag(tag)}
-                    className={`px-4 py-2 rounded-full text-xs font-semibold transition-all duration-200 border ${
-                      isSelected
-                        ? "bg-[var(--primary)] text-white border-[var(--primary)] shadow-sm"
-                        : "bg-white text-[var(--text-secondary)] border-gray-200 hover:border-[var(--primary)] hover:text-[var(--primary)]"
-                    }`}
+                    className={`px-4 py-2 rounded-full text-xs font-semibold transition-all duration-200 border ${isSelected ? "bg-[var(--primary)] text-white border-[var(--primary)] shadow-sm" : "bg-white text-[var(--text-secondary)] border-gray-200 hover:border-[var(--primary)] hover:text-[var(--primary)]"}`}
                   >
                     {tag}
                   </button>
@@ -484,9 +490,7 @@ export default function AddRecipePage() {
             )}
           </motion.div>
 
-          {/* =========================================
-              4. Ingredients (Dynamic)
-              ========================================= */}
+          {/* ... Ingredients (Dynamic) ... */}
           <motion.div
             variants={itemVariants}
             className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 sm:p-8"
@@ -500,18 +504,16 @@ export default function AddRecipePage() {
                 type="button"
                 variant="outline"
                 onClick={addIngredient}
-                className="gap-1 border-(--primary) text-(--primary) hover:bg-(--primary) hover:scale-105"
+                className="gap-1 border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:scale-105"
               >
                 <Plus className="h-4 w-4" /> Add Item
               </Button>
             </div>
-
             {errors.ingredients && (
               <p className="mb-4 text-sm text-red-500 flex items-center gap-1">
                 <AlertCircle className="h-3.5 w-3.5" /> {errors.ingredients}
               </p>
             )}
-
             <div className="space-y-3">
               <AnimatePresence initial={false}>
                 {formData.ingredients.map((ingredient, index) => (
@@ -563,9 +565,7 @@ export default function AddRecipePage() {
             </div>
           </motion.div>
 
-          {/* =========================================
-              5. Steps (Dynamic Ordered List)
-              ========================================= */}
+          {/* ... Steps (Dynamic Ordered List) ... */}
           <motion.div
             variants={itemVariants}
             className="rounded-2xl bg-white p-6 shadow-sm border border-gray-100 sm:p-8"
@@ -575,21 +575,20 @@ export default function AddRecipePage() {
                 <ListOrdered className="h-5 w-5 text-[var(--primary)]" /> Steps{" "}
                 <span className="text-red-500 text-sm font-normal">*</span>
               </h2>
+              {/* Fixed: Added closing bracket ] for className */}
               <Button
                 variant="outline"
                 onClick={addStep}
-                className="gap-1 border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary) hover:scale-105"
+                className="gap-1 border-[var(--primary)] text-[var(--primary)] hover:bg-[var(--primary)] hover:scale-105"
               >
                 <Plus className="h-4 w-4" /> Add Step
               </Button>
             </div>
-
             {errors.steps && (
               <p className="mb-4 text-sm text-red-500 flex items-center gap-1">
                 <AlertCircle className="h-3.5 w-3.5" /> {errors.steps}
               </p>
             )}
-
             <div className="space-y-3">
               <AnimatePresence initial={false}>
                 {formData.steps.map((step, index) => (
@@ -630,9 +629,7 @@ export default function AddRecipePage() {
             </div>
           </motion.div>
 
-          {/* =========================================
-              6. Form Actions
-              ========================================= */}
+          {/* ... Form Actions ... */}
           <motion.div
             variants={itemVariants}
             className="flex flex-col sm:flex-row gap-4 justify-end pt-4 border-t border-gray-100"
@@ -681,6 +678,15 @@ export default function AddRecipePage() {
           </motion.div>
         </motion.form>
       </Container>
+
+      {/* =========================================
+          AI RECIPE POLISHER MODAL
+          ========================================= */}
+      <AIRecipePolisher
+        isOpen={isAIModalOpen}
+        onClose={() => setIsAIModalOpen(false)}
+        onApply={handleApplyAI}
+      />
     </div>
   );
 }
