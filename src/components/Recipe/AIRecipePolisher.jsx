@@ -28,6 +28,7 @@ const AIRecipePolisher = ({ isOpen, onClose, onApply }) => {
     setIsGenerating(true);
     setStep("loading");
     try {
+      // Send the raw string steps. Your backend automatically converts it to an array!
       const response = await serverMutation("/api/ai/generate-recipe-copy", {
         ingredients: formData.ingredients,
         steps: formData.steps,
@@ -35,12 +36,10 @@ const AIRecipePolisher = ({ isOpen, onClose, onApply }) => {
         length: formData.length,
       });
 
-      // If we reach this line, it means serverMutation succeeded (200 OK)
       setAiResult(response.data);
       setStep("results");
       toast.success("AI polished your recipe!");
     } catch (error) {
-      // serverMutation automatically threw an error here. We catch it!
       toast.error(error.message || "AI generation failed");
       setStep("input");
     } finally {
@@ -50,7 +49,14 @@ const AIRecipePolisher = ({ isOpen, onClose, onApply }) => {
 
   const handleApply = () => {
     if (aiResult) {
-      onApply(aiResult);
+      // 🛡️ Safety check: Ensure steps is an array before passing to parent
+      const safeResult = {
+        ...aiResult,
+        steps: Array.isArray(aiResult.steps)
+          ? aiResult.steps
+          : [aiResult.steps],
+      };
+      onApply(safeResult);
       onClose();
       toast.success("AI content applied to your recipe!");
     }
