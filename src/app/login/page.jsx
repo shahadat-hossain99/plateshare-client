@@ -129,7 +129,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-[var(--background)] via-white to-[var(--primary)]/10 py-12 flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-[calc(100vh-80px)] bg-gradient-to-br from-[var(--background)] via-white to-[var(--primary)]/10 py-12 flex items-center justify-center relative overflow-hidden mt-4">
       {/* Creative Decorative Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none select-none z-0">
         <motion.div
